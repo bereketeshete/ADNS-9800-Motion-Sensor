@@ -54,16 +54,58 @@
 
 const int ncs = 10;  //This is the SPI "slave select" pin that the sensor is hooked up to
 
+uint8_t PIN_NCS;
+
 
 void setup() {
   Serial.begin(9600);
   Serial.print("ADNS 9800 code_intitialized\n");
+
+  pinMode (ncs, OUTPUT);  
+  
+  pinMode(Motion_Interrupt_Pin, INPUT);
+  digitalWrite(Motion_Interrupt_Pin, HIGH);
+  //attachInterrupt(9, UpdatePointer, FALLING);
+
+  SPI.begin();
+  SPI.setDataMode(SPI_MODE3);
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setClockDivider(SPI_CLOCK_DIV128);
 }
+
+
+// void UpdatePointer(void){
+//   if(initComplete==9){
+//     //write 0x01 to Motion register and read from it to freeze the motion values and make them available
+//     adns_write_reg(Motion, 0x01);
+//     adns_read_reg(Motion);
+//     int16_t DELTA_X = adns_read_reg(Delta_X_L) + (int16_t)(adns_read_reg(Delta_X_H) << 8);
+//     int16_t DELTA_Y = adns_read_reg(Delta_Y_L) + (int16_t)(adns_read_reg(Delta_Y_H) << 8); 
+//     xydat[0] = DELTA_X;
+//     xydat[1] = DELTA_Y;
+//     movementflag=1;
+//   }
+// }
+
+
 
 void loop() {
  
 }
 
+void writeRegister(const uint8_t reg, uint8_t output) {
+  // Enable communication
+  digitalWrite( PIN_NCS, LOW );
+  SPI.transfer( reg | B10000000 );
+  // Send value
+  SPI.transfer( output );
+  // Disable communcation
+  digitalWrite( PIN_NCS, HIGH );
+  delayMicroseconds( ADNS3080_T_SWW );
+
+uint8_t readRegister( const uint8_t );
+
+void motionBurst( uint8_t*, int8_t*, int8_t*, uint8_t*, uint16_t*, uint8_t* );
 
 
 
